@@ -1,8 +1,8 @@
-FROM openjdk:11-jdk-slim
+FROM openjdk:17-jdk
 
 WORKDIR /app
 
-COPY ./target/myapp-0.0.1-SNAPSHOT.jar ./app.jar
+COPY ./target/rancard-0.0.1-SNAPSHOT.jar ./app.jar
 
 COPY ./src/main/resources/application.properties ./application.properties
 
