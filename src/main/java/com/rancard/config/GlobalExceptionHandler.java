@@ -31,32 +31,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status( HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<Object> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
-        String errors = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(fieldError -> fieldError.getDefaultMessage())
-                .collect(Collectors.joining(", "));
-
-        return new ResponseEntity<>("Validation failed: " + errors, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(NullPointerException.class)
-    public ResponseEntity<String> handleNullPointerExceptions(NullPointerException ex){
-        throw new InvalidTransactionException(ex.getMessage());
-    }
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleNullPointerExceptions(IllegalArgumentException ex){
-        throw new InvalidTransactionException(ex.getMessage());
-    }
-
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<String> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
-        // Extract the cause of the exception, which should be a JsonParseException
+
         Throwable cause = ex.getCause();
 
         return ResponseEntity.badRequest().body (cause.getMessage());

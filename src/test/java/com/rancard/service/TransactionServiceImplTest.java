@@ -3,8 +3,11 @@ package com.rancard.service;
 import com.rancard.exception.TransactionNotFoundException;
 import com.rancard.model.Transaction;
 import com.rancard.model.User;
+import com.rancard.model.dto.transaction.CreateTransactionDto;
+import com.rancard.model.dto.transaction.UpdateTransactionDto;
 import com.rancard.repository.TransactionRepo;
 import com.rancard.repository.UserRepo;
+import org.hibernate.service.spi.ServiceException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,9 +37,6 @@ class TransactionServiceImplTest {
     private TransactionRepo transactionRepo;
 
     @Mock
-    private UserRepo userRepo;
-
-    @Mock
     private UserService userService;
     @InjectMocks
     private TransactionServiceImpl underTest;
@@ -54,15 +54,24 @@ class TransactionServiceImplTest {
 
     @Test
     void create() {
-//        CreateTransactionDto createTransactionDto = factory.manufacturePojo(CreateTransactionDto.class);
-//        when(userRepo.findById(anyLong())).thenReturn(Optional.ofNullable(factoryUser));
-//        when(transactionRepo.save(any())).thenReturn(factoryTransaction);
-//
-//        Transaction expected = underTest.create(createTransactionDto);
-//
-//        verify(transactionRepo,times(1)).save(any());
-//
-//        assertEquals(expected,factoryTransaction);
+        CreateTransactionDto createTransactionDto = factory.manufacturePojo(CreateTransactionDto.class);
+        when(userService.getById(anyLong())).thenReturn(factoryUser);
+        when(transactionRepo.save(any())).thenReturn(factoryTransaction);
+
+        Transaction expected = underTest.create(createTransactionDto);
+
+        verify(userService,times(2)).getById(anyLong());
+        verify(transactionRepo,times(1)).save(any());
+        assertEquals(expected.getSender(),factoryUser);
+    }
+
+    @Test
+    void throwExceptionWhenSenderOrReceiverDoesNotExist(){
+        CreateTransactionDto createTransactionDto = factory.manufacturePojo(CreateTransactionDto.class);
+
+        doThrow(ServiceException.class).when(userService).getById(anyLong());
+
+        assertThrows(ServiceException.class,()-> underTest.create(createTransactionDto));
     }
 
     @Test
@@ -77,6 +86,23 @@ class TransactionServiceImplTest {
 
     @Test
     void update() {
+        //given
+        when(transactionRepo.findById(anyLong())).thenReturn(Optional.ofNullable(factoryTransaction));
+        UpdateTransactionDto updateTransactionDto = factory.manufacturePojoWithFullData(UpdateTransactionDto.class);
+        updateTransactionDto.setAmount(Optional.of(400.0));
+        when(userService.getById(anyLong())).thenReturn(factoryUser);
+        factoryTransaction.setSender(factoryUser);
+        factoryTransaction.setAmount(updateTransactionDto.getAmount().get());
+
+        when(transactionRepo.save(any())).thenReturn(factoryTransaction);
+
+        //given
+        Transaction expected = underTest.update(updateTransactionDto);
+
+        //then
+        verify(transactionRepo,times(1)).save(any());
+        verify(transactionRepo,times(1)).findById(anyLong());
+        assertEquals(expected.getAmount(),400.0,"The updated amount of the transaction should be 400");
     }
 
     @Test

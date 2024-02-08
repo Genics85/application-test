@@ -6,12 +6,9 @@ import com.rancard.model.User;
 import com.rancard.model.dto.transaction.CreateTransactionDto;
 import com.rancard.model.dto.transaction.UpdateTransactionDto;
 import com.rancard.repository.TransactionRepo;
-import com.rancard.repository.UserRepo;
 import jakarta.transaction.Transactional;
-import org.hibernate.service.spi.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -19,24 +16,20 @@ import java.util.List;
 @Transactional
 public class TransactionServiceImpl implements TransactionService {
 
-    @Autowired
-    TransactionRepo transactionRepo;
 
-    @Autowired
-    UserRepo userRepo;
-    @Autowired
-    UserService userService;
+    private final TransactionRepo transactionRepo;
+    private final UserService userService;
 
-    public TransactionServiceImpl(TransactionRepo transactionRepo) {
+    public TransactionServiceImpl(TransactionRepo transactionRepo, UserService userService) {
+        this.userService = userService;
         this.transactionRepo = transactionRepo;
     }
 
     @Override
     public Transaction create(CreateTransactionDto createTransactionDto) {
 
-        User sender = userRepo.findById(createTransactionDto.getSenderId()).orElseThrow(()-> new ServiceException("User with id not found"));
-
-        User receiver = userRepo.findById(createTransactionDto.getReceiverId()).orElseThrow(()-> new ServiceException("User with id not found"));
+        User sender = userService.getById(createTransactionDto.getSenderId());
+        User receiver = userService.getById(createTransactionDto.getReceiverId());
 
         double amount = Math.abs(createTransactionDto.getAmount());
 
