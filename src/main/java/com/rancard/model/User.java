@@ -1,10 +1,11 @@
 package com.rancard.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
+
 
 @Data
 @Entity
@@ -17,6 +18,5 @@ public class User {
     private String lastName;
     private String phone;
     @CreatedDate
-    private LocalDateTime date = LocalDateTime.now();
-
+    private LocalDateTime dateCreated = LocalDateTime.now();
 }
